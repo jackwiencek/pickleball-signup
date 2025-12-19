@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
         const result = await db.execute(
             'SELECT * FROM signups ORDER BY created_at DESC'
         )
-
         return result.rows
     } catch (error) {
         console.error('Database error:', error)
