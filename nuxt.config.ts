@@ -7,5 +7,6 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/icon',
     'nuxt-auth-utils'
-  ]
+  ],
+  css: ['~/assets/css/main.css']
 })
