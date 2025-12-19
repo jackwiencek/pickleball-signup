@@ -52,9 +52,16 @@ const days = computed(() => {
   return result
 })
 
+// Grid time slot interface
+interface GridTimeSlot {
+  time: string
+  endTime: string
+  display: string
+}
+
 // Time slots based on duration (6 AM - 9 PM)
-const timeSlots = computed(() => {
-  const slots = []
+const timeSlots = computed((): GridTimeSlot[] => {
+  const slots: GridTimeSlot[] = []
   const startHour = 6
   const endHour = 21 // 9 PM
   const duration = slotDuration.value
@@ -86,25 +93,61 @@ const { data: existingSlots, refresh: refreshSlots } = await useFetch('/api/slot
   }))
 })
 
-// Check if a slot exists for a given date and time
-function getSlot(date: string, startTime: string) {
+// Helper to convert time string to minutes
+function timeToMinutes(time: string): number {
+  const parts = time.split(':')
+  return parseInt(parts[0] || '0') * 60 + parseInt(parts[1] || '0')
+}
+
+// Find any slot that overlaps with the given time range
+function getOverlappingSlot(date: string, cellStart: string, cellEnd: string) {
+  const cellStartMins = timeToMinutes(cellStart)
+  const cellEndMins = timeToMinutes(cellEnd)
+
+  // Find slots that overlap with this cell's time range
+  // Prioritize: confirmed > pending > available
+  const overlapping = (existingSlots.value || [])
+    .filter((s: { date: string; start_time: string; end_time: string }) => {
+      if (s.date !== date) return false
+      const slotStart = timeToMinutes(s.start_time)
+      const slotEnd = timeToMinutes(s.end_time)
+      // Overlap: slot starts before cell ends AND slot ends after cell starts
+      return slotStart < cellEndMins && slotEnd > cellStartMins
+    })
+    .sort((a: { status: string }, b: { status: string }) => {
+      // Priority: confirmed > pending > available
+      const priority: Record<string, number> = { confirmed: 0, pending: 1, available: 2 }
+      return (priority[a.status] ?? 3) - (priority[b.status] ?? 3)
+    })
+
+  return overlapping[0]
+}
+
+// Check if a slot exists with exact start time (for toggling)
+function getExactSlot(date: string, startTime: string) {
   return existingSlots.value?.find(
-    (s: any) => s.date === date && s.start_time === startTime
+    (s: { date: string; start_time: string }) => s.date === date && s.start_time === startTime
   )
 }
 
 // Toggle slot availability
 async function toggleSlot(date: string, startTime: string, endTime: string) {
-  const existing = getSlot(date, startTime)
+  const overlapping = getOverlappingSlot(date, startTime, endTime)
 
-  if (existing) {
+  // Don't allow changes if there's an overlapping pending/confirmed slot
+  if (overlapping && overlapping.status !== 'available') {
+    return
+  }
+
+  const exactSlot = getExactSlot(date, startTime)
+
+  if (exactSlot) {
     // Delete the slot if it's available (not booked)
-    if (existing.status === 'available') {
-      await $fetch(`/api/slots/${existing.id}`, { method: 'DELETE' })
+    if (exactSlot.status === 'available') {
+      await $fetch(`/api/slots/${exactSlot.id}`, { method: 'DELETE' })
     }
-    // Can't delete pending/confirmed slots from here
-  } else {
-    // Create new slot
+  } else if (!overlapping) {
+    // Only create new slot if nothing overlaps
     await $fetch('/api/slots', {
       method: 'POST',
       body: { date, start_time: startTime, end_time: endTime }
@@ -114,9 +157,9 @@ async function toggleSlot(date: string, startTime: string, endTime: string) {
   await refreshSlots()
 }
 
-// Get cell styling based on slot status
-function getCellClass(date: string, startTime: string) {
-  const slot = getSlot(date, startTime)
+// Get cell styling based on slot status (using overlap detection)
+function getCellClass(date: string, startTime: string, endTime: string) {
+  const slot = getOverlappingSlot(date, startTime, endTime)
   if (!slot) return 'bg-gray-100 hover:bg-green-100 cursor-pointer'
 
   switch (slot.status) {
@@ -252,14 +295,14 @@ function goToToday() {
                 <div
                   :class="[
                     'h-10 rounded transition-colors flex items-center justify-center text-xs',
-                    getCellClass(day.date, slot.time)
+                    getCellClass(day.date, slot.time, slot.endTime)
                   ]"
                   @click="toggleSlot(day.date, slot.time, slot.endTime)"
                 >
-                  <template v-if="getSlot(day.date, slot.time)?.status === 'pending'">
+                  <template v-if="getOverlappingSlot(day.date, slot.time, slot.endTime)?.status === 'pending'">
                     Pending
                   </template>
-                  <template v-else-if="getSlot(day.date, slot.time)?.status === 'confirmed'">
+                  <template v-else-if="getOverlappingSlot(day.date, slot.time, slot.endTime)?.status === 'confirmed'">
                     Booked
                   </template>
                 </div>
