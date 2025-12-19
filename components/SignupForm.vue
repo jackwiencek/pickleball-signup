@@ -68,34 +68,34 @@ async function onSubmit() {
   </div>
   
   <UForm v-else :state="state" @submit="onSubmit" class="space-y-6">
-    <UFormGroup label="Name" name="name" required>
+    <UFormField label="Name" name="name" required>
       <UInput v-model="state.name" placeholder="Your full name" />
-    </UFormGroup>
+    </UFormField>
     
-    <UFormGroup label="Email" name="email" required>
+    <UFormField label="Email" name="email" required>
       <UInput v-model="state.email" type="email" placeholder="you@example.com" />
-    </UFormGroup>
+    </UFormField>
     
-    <UFormGroup label="Phone" name="phone">
+    <UFormField label="Phone" name="phone">
       <UInput v-model="state.phone" type="tel" placeholder="(555) 555-5555" />
-    </UFormGroup>
+    </UFormField>
     
-    <UFormGroup label="Experience Level" name="experience">
+    <UFormField label="Experience Level" name="experience">
       <USelect v-model="state.experience" :options="experienceOptions" placeholder="Select your level" />
-    </UFormGroup>
+    </UFormField>
     
-    <UFormGroup label="Availability" name="availability">
+    <UFormField label="Availability" name="availability">
       <USelectMenu
         v-model="state.availability"
         :options="availabilityOptions"
         multiple
         placeholder="Select available times"
       />
-    </UFormGroup>
+    </UFormField>
     
-    <UFormGroup label="Message (optional)" name="message">
+    <UFormField label="Message (optional)" name="message">
       <UTextarea v-model="state.message" placeholder="Any questions or notes?" />
-    </UFormGroup>
+    </UFormField>
     
     <UButton type="submit" :loading="loading" block>
       Sign Up for Lessons

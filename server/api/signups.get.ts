@@ -1,3 +1,5 @@
+import { db } from '../utils/db'
+
 export default defineEventHandler(async (event) => {
     // Verify session
     const session = await getUserSession(event)

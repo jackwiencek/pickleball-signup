@@ -38,9 +38,9 @@ async function onSubmit() {
       </template>
       
       <form @submit.prevent="onSubmit" class="space-y-4">
-        <UFormGroup label="Password">
+        <UFormField label="Password">
           <UInput v-model="password" type="password" placeholder="Enter admin password" />
-        </UFormGroup>
+        </UFormField>
         
         <UButton type="submit" :loading="loading" block>
           Login
