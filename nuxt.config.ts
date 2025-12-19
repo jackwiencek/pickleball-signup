@@ -7,5 +7,12 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/icon',
     'nuxt-auth-utils'
-  ]
+  ],
+  eslint: {
+    config: {
+      rules: {
+        'vue/multi-word-component-names': 'off'
+      }
+    }
+  }
 })

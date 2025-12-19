@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { reactive, ref } from 'vue'
+import { useToast } from '#imports'
+import { $fetch } from 'ofetch'
+
 const toast = useToast()
 
 const state = reactive({
