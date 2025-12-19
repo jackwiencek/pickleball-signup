@@ -16,15 +16,39 @@ const experienceOptions = [
   { label: 'Advanced', value: 'advanced' }
 ]
 
+const availabilityOptions = [
+  { label: 'Monday Morning', value: 'mon-am' },
+  { label: 'Monday Evening', value: 'mon-pm' },
+  { label: 'Tuesday Morning', value: 'tue-am' },
+  { label: 'Tuesday Evening', value: 'tue-pm' },
+  { label: 'Wednesday Morning', value: 'wed-am' },
+  { label: 'Wednesday Evening', value: 'wed-pm' },
+  { label: 'Thursday Morning', value: 'thu-am' },
+  { label: 'Thursday Evening', value: 'thu-pm' },
+  { label: 'Friday Morning', value: 'fri-am' },
+  { label: 'Friday Evening', value: 'fri-pm' },
+  { label: 'Saturday', value: 'sat' },
+  { label: 'Sunday', value: 'sun' }
+]
+
 const loading = ref(false)
 const submitted = ref(false)
 
 async function onSubmit() {
   loading.value = true
-  console.log('Submitting:', state)
-  // TODO: API call
-  submitted.value = true
-  loading.value = false
+  
+  try {
+    await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    })
+    submitted.value = true
+  } catch (error) {
+    console.error('Submit error:', error)
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -49,9 +73,13 @@ async function onSubmit() {
     <UFormField label="Experience Level">
       <USelect v-model="state.experience" :items="experienceOptions" placeholder="Select your level" />
     </UFormField>
+
+    <UFormField label="Availability">
+      <USelect v-model="state.availability" :items="availabilityOptions" placeholder="General Availability" multiple />
+    </UFormField>
     
     <UFormField label="Message">
-      <UTextarea v-model="state.message" placeholder="Any questions?" />
+      <UTextarea v-model="state.message" placeholder="Enter questions or availability info" />
     </UFormField>
     
     <UButton type="submit" :loading="loading" block>

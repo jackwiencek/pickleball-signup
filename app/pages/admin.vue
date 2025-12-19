@@ -7,13 +7,13 @@ const router = useRouter()
 const { data: signups, pending, refresh } = await useFetch('/api/signups')
 
 const columns = [
-  { key: 'name', label: 'Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'experience', label: 'Experience' },
-  { key: 'availability', label: 'Availability' },
-  { key: 'message', label: 'Message' },
-  { key: 'created_at', label: 'Submitted' }
+  { id: 'name', accessorKey: 'name', header: 'Name' },
+  { id: 'email', accessorKey: 'email', header: 'Email' },
+  { id: 'phone', accessorKey: 'phone', header: 'Phone' },
+  { id: 'experience', accessorKey: 'experience', header: 'Experience' },
+  { id: 'availability', accessorKey: 'availability', header: 'Availability' },
+  { id: 'message', accessorKey: 'message', header: 'Message' },
+  { id: 'created_at', accessorKey: 'created_at', header: 'Submitted' }
 ]
 
 function formatDate(dateString: string) {
@@ -70,7 +70,7 @@ async function logout() {
           <p class="mt-2 text-gray-600">No signups yet</p>
         </div>
         
-        <UTable v-else :columns="columns" :rows="signups">
+        <UTable v-else :columns="columns" :data="signups">
           <template #availability-data="{ row }">
             {{ parseAvailability(row.availability) }}
           </template>
