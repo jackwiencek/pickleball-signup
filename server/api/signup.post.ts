@@ -4,11 +4,21 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     // Basic validation
-    if (!body.name || !body.email) {
+    if (!body.name || !body.email || !body.experience) {
         throw createError({
             statusCode: 400,
-            message: 'Name and email are required'
+            message: 'Name, email, and experience are required'
         })
+    }
+
+    if (body.experience) {
+        const exp = parseFloat(body.experience)
+        if (isNaN(exp) || exp < 1.0 || exp > 8.0) {
+            throw createError({
+                statusCode: 400,
+                message: 'Experience must be between 1.0 and 8.0'
+            })
+        }
     }
 
     try {

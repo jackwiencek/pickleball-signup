@@ -10,11 +10,6 @@ const state = reactive({
   message: ''
 })
 
-const experienceOptions = [
-  { label: 'Beginner', value: 'beginner' },
-  { label: 'Intermediate', value: 'intermediate' },
-  { label: 'Advanced', value: 'advanced' }
-]
 
 const availabilityOptions = [
   { label: 'Monday Morning', value: 'mon-am' },
@@ -70,8 +65,16 @@ async function onSubmit() {
       <UInput v-model="state.phone" type="tel" placeholder="(555) 555-5555" />
     </UFormField>
     
-    <UFormField label="Experience Level">
-      <USelect v-model="state.experience" :items="experienceOptions" placeholder="Select your level" />
+    <UFormField label="Experience Level" required>
+      <UInput 
+          class="w-32"
+          v-model="state.experience" 
+          type="number" 
+          step="0.1" 
+          min="1.0" 
+          max="8.0"
+          placeholder="e.g. 3.5" 
+        />
     </UFormField>
 
     <UFormField label="Availability">
