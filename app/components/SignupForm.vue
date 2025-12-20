@@ -215,11 +215,11 @@ async function onSubmit() {
 
     <!-- Personal Info Section -->
     <div>
-      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Your Information</h3>
+      <h3 class="text-sm font-semibold text-primary-400 uppercase tracking-wider mb-4">Your Information</h3>
       <div class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <UFormField label="Name" required>
-            <UInput v-model="state.name" placeholder="Your full name" size="lg" />
+            <UInput v-model="state.name" placeholder="Your full name" size="lg"/>
           </UFormField>
 
           <UFormField label="Phone">
@@ -265,14 +265,14 @@ async function onSubmit() {
 
     <!-- Time Slot Selection -->
     <div>
-      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Select Times</h3>
+      <h3 class="text-sm font-semibold text-primary-400 uppercase tracking-wider mb-4">Select Times</h3>
 
       <div v-if="loadingSlots" class="py-8 text-center">
         <Icon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin mx-auto text-neutral-400" />
         <p class="text-sm text-neutral-500 mt-3">Loading available times...</p>
       </div>
 
-      <div v-else-if="!slotsByDay.length" class="bg-neutral-50 rounded-xl p-6 text-center">
+      <div v-else-if="!slotsByDay.length" class="bg-primary-200 rounded-xl p-6 text-center">
         <Icon name="i-heroicons-calendar" class="w-8 h-8 text-neutral-300 mx-auto mb-3" />
         <p class="text-neutral-600 font-medium">No available slots</p>
         <p class="text-sm text-neutral-400 mt-1">Check back later or leave a message below.</p>
@@ -368,7 +368,7 @@ async function onSubmit() {
 
     <!-- Message -->
     <div>
-      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Additional Info</h3>
+      <h3 class="text-sm font-semibold text-primary-400 uppercase tracking-wider mb-4">Additional Info</h3>
       <UFormField label="Message (optional)">
         <UTextarea
           v-model="state.message"

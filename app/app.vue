@@ -1,6 +1,6 @@
 <template>
   <UApp>
-    <UMain>
+    <UMain class="min-h-screen">
       <NuxtPage />
     </UMain>
   </UApp>
