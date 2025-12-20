@@ -18,10 +18,18 @@ interface Signup {
   email: string
   phone: string | null
   experience: number | null
+  location: string | null
   selected_slots: string | null
   no_availability: number | null
   message: string | null
   created_at: string
+}
+
+// Map location values to display names
+const locationLabels: Record<string, string> = {
+  'hot-shots': 'Hot Shots Pickleball Club',
+  'lidas-ranch': "Lida's Pickleball Ranch",
+  'orville-vitality': 'Orville Vitality'
 }
 
 const { data: signups, pending, refresh } = await useFetch<Signup[]>('/api/signups')
@@ -99,6 +107,74 @@ async function confirmSlot(slotId: number) {
   }
 }
 
+// Cancel a slot (set back to available)
+const cancelling = ref<number | null>(null)
+
+// Track last cancelled slot for undo
+interface CancelledSlot {
+  slotId: number
+  previousStatus: string
+  signupId: number
+}
+const lastCancelled = ref<CancelledSlot | null>(null)
+const undoTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
+async function cancelSlot(slotId: number, signupId: number) {
+  // Get current status before cancelling
+  const slot = slotsMap.value.get(slotId)
+  const previousStatus = slot?.status || 'pending'
+
+  cancelling.value = slotId
+  try {
+    await $fetch(`/api/slots/${slotId}`, {
+      method: 'PATCH',
+      body: { status: 'available' }
+    })
+
+    // Store for undo
+    lastCancelled.value = { slotId, previousStatus, signupId }
+
+    // Clear undo option after 10 seconds
+    if (undoTimeout.value) clearTimeout(undoTimeout.value)
+    undoTimeout.value = setTimeout(() => {
+      lastCancelled.value = null
+    }, 10000)
+
+    await refreshSlots()
+  } catch (error) {
+    console.error('Failed to cancel slot:', error)
+  } finally {
+    cancelling.value = null
+  }
+}
+
+// Undo cancellation
+const undoing = ref(false)
+
+async function undoCancel() {
+  if (!lastCancelled.value) return
+
+  undoing.value = true
+  try {
+    await $fetch(`/api/slots/${lastCancelled.value.slotId}`, {
+      method: 'PATCH',
+      body: {
+        status: lastCancelled.value.previousStatus,
+        booked_by: lastCancelled.value.signupId
+      }
+    })
+
+    if (undoTimeout.value) clearTimeout(undoTimeout.value)
+    lastCancelled.value = null
+
+    await refreshSlots()
+  } catch (error) {
+    console.error('Failed to undo cancellation:', error)
+  } finally {
+    undoing.value = false
+  }
+}
+
 // Expanded rows for viewing slot details
 const expandedRows = ref<Set<number>>(new Set())
 
@@ -120,6 +196,26 @@ defineExpose({ refresh })
       <UButton variant="ghost" @click="refresh">
         <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
         Refresh
+      </UButton>
+    </div>
+
+    <!-- Undo notification -->
+    <div
+      v-if="lastCancelled"
+      class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <Icon name="i-heroicons-arrow-uturn-left" class="w-5 h-5 text-amber-600" />
+        <span class="text-sm text-amber-800">Slot cancelled</span>
+      </div>
+      <UButton
+        size="xs"
+        color="amber"
+        variant="soft"
+        :loading="undoing"
+        @click="undoCancel"
+      >
+        Undo
       </UButton>
     </div>
 
@@ -157,6 +253,10 @@ defineExpose({ refresh })
               </div>
               <p class="text-sm text-gray-600">{{ signup.email }}</p>
               <p v-if="signup.phone" class="text-sm text-gray-500">{{ signup.phone }}</p>
+              <p v-if="signup.location" class="text-sm text-gray-500">
+                <Icon name="i-heroicons-map-pin" class="w-3 h-3 inline" />
+                {{ locationLabels[signup.location] || signup.location }}
+              </p>
               <p v-if="signup.message" class="text-sm text-gray-500 mt-1 italic">
                 "{{ signup.message }}"
               </p>
@@ -219,15 +319,26 @@ defineExpose({ refresh })
                 </span>
               </div>
 
-              <UButton
-                v-if="slot.status === 'pending'"
-                size="xs"
-                color="primary"
-                :loading="confirming === slot.id"
-                @click="confirmSlot(slot.id)"
-              >
-                Confirm
-              </UButton>
+              <div class="flex items-center gap-2">
+                <UButton
+                  v-if="slot.status === 'pending'"
+                  size="xs"
+                  color="primary"
+                  :loading="confirming === slot.id"
+                  @click="confirmSlot(slot.id)"
+                >
+                  Confirm
+                </UButton>
+                <UButton
+                  size="xs"
+                  color="red"
+                  variant="soft"
+                  :loading="cancelling === slot.id"
+                  @click="cancelSlot(slot.id, signup.id)"
+                >
+                  Cancel
+                </UButton>
+              </div>
             </div>
           </div>
         </div>

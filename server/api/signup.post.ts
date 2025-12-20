@@ -4,10 +4,10 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     // Basic validation
-    if (!body.name || !body.email || !body.experience) {
+    if (!body.name || !body.email || !body.experience || !body.location) {
         throw createError({
             statusCode: 400,
-            message: 'Name, email, and experience are required'
+            message: 'Name, email, experience, and location are required'
         })
     }
 
@@ -61,13 +61,14 @@ export default defineEventHandler(async (event) => {
 
         // Insert the signup
         const result = await db.execute({
-            sql: `INSERT INTO signups (name, email, phone, experience, selected_slots, no_availability, message)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO signups (name, email, phone, experience, location, selected_slots, no_availability, message)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             args: [
                 body.name,
                 body.email,
                 body.phone || null,
                 body.experience || null,
+                body.location,
                 selectedSlots.length > 0 ? JSON.stringify(selectedSlots) : null,
                 noAvailability ? 1 : 0,
                 body.message || null

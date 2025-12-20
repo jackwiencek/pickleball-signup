@@ -7,10 +7,17 @@ const state = reactive({
   email: '',
   phone: '',
   experience: '',
+  location: '',
   selectedSlots: [] as number[],
   noAvailability: false,
   message: ''
 })
+
+const locationOptions = [
+  { label: 'Hot Shots Pickleball Club', value: 'hot-shots' },
+  { label: "Lida's Pickleball Ranch", value: 'lidas-ranch' },
+  { label: 'Orville Vitality', value: 'orville-vitality' }
+]
 
 // Fetch available slots for the next 4 weeks
 const today = new Date()
@@ -34,11 +41,18 @@ interface TimeSlot {
   status: string
 }
 
-// Group slots by week
-const slotsByWeek = computed(() => {
+// Group slots by day
+interface DayGroup {
+  date: string
+  dayLabel: string
+  dateLabel: string
+  slots: TimeSlot[]
+}
+
+const slotsByDay = computed((): DayGroup[] => {
   if (!availableSlots.value) return []
 
-  const weeks: { weekStart: Date; weekLabel: string; slots: TimeSlot[] }[] = []
+  const days = new Map<string, DayGroup>()
   const slots = ([...(availableSlots.value || [])] as unknown as TimeSlot[]).sort((a, b) => {
     const dateCompare = a.date.localeCompare(b.date)
     if (dateCompare !== 0) return dateCompare
@@ -46,44 +60,59 @@ const slotsByWeek = computed(() => {
   })
 
   for (const slot of slots) {
-    const slotDate = new Date(slot.date + 'T00:00:00')
-    const dayOfWeek = slotDate.getDay()
-    const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
-    const weekStart = new Date(slotDate)
-    weekStart.setDate(slotDate.getDate() + diff)
-
-    let week = weeks.find(w => w.weekStart.getTime() === weekStart.getTime())
-    if (!week) {
-      const weekEnd = new Date(weekStart)
-      weekEnd.setDate(weekStart.getDate() + 6)
-      week = {
-        weekStart,
-        weekLabel: `Week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+    let day = days.get(slot.date)
+    if (!day) {
+      const slotDate = new Date(slot.date + 'T00:00:00')
+      day = {
+        date: slot.date,
+        dayLabel: slotDate.toLocaleDateString('en-US', { weekday: 'long' }),
+        dateLabel: slotDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         slots: []
       }
-      weeks.push(week)
+      days.set(slot.date, day)
     }
-    week.slots.push(slot)
+    day.slots.push(slot)
   }
 
-  return weeks.sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime())
+  return Array.from(days.values())
 })
 
-// Format slot for display
-function formatSlot(slot: TimeSlot) {
-  const date = new Date(slot.date + 'T00:00:00')
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
-  const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+// Track expanded days (first day with slots expanded by default)
+const expandedDays = ref<Set<string>>(new Set())
 
-  // Convert 24h to 12h format
-  const timeParts = slot.start_time.split(':')
-  const hourNum = parseInt(timeParts[0] || '0')
-  const minStr = timeParts[1] || '00'
-  const hour12 = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum
-  const ampm = hourNum >= 12 ? 'PM' : 'AM'
-  const timeStr = `${hour12}:${minStr} ${ampm}`
+// Initialize with first day expanded
+const firstDay = slotsByDay.value[0]
+if (firstDay) {
+  expandedDays.value.add(firstDay.date)
+}
 
-  return `${dayName} ${dateStr} - ${timeStr}`
+function toggleDay(date: string) {
+  if (expandedDays.value.has(date)) {
+    expandedDays.value.delete(date)
+  } else {
+    expandedDays.value.add(date)
+  }
+}
+
+// Format time for chip display (shows range like "10:00 - 10:30 AM")
+function formatTimeRange(startTime: string, endTime: string): string {
+  const formatSingle = (time: string) => {
+    const parts = time.split(':')
+    const hourNum = parseInt(parts[0] || '0')
+    const minStr = parts[1] || '00'
+    const hour12 = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum
+    const ampm = hourNum >= 12 ? 'PM' : 'AM'
+    return { formatted: `${hour12}:${minStr}`, ampm }
+  }
+
+  const start = formatSingle(startTime)
+  const end = formatSingle(endTime)
+
+  // If AM/PM is the same, only show it once at the end
+  if (start.ampm === end.ampm) {
+    return `${start.formatted} - ${end.formatted} ${end.ampm}`
+  }
+  return `${start.formatted} ${start.ampm} - ${end.formatted} ${end.ampm}`
 }
 
 // Toggle slot selection
@@ -96,6 +125,16 @@ function toggleSlot(slotId: number) {
   } else {
     state.selectedSlots.push(slotId)
   }
+}
+
+// Check if slot is selected
+function isSelected(slotId: number): boolean {
+  return state.selectedSlots.includes(slotId)
+}
+
+// Count selected slots for a day
+function selectedCountForDay(day: DayGroup): number {
+  return day.slots.filter(s => state.selectedSlots.includes(s.id)).length
 }
 
 // Handle "no availability" toggle
@@ -114,7 +153,7 @@ async function onSubmit() {
   errorMessage.value = ''
 
   // Validation
-  if (!state.name || !state.email || !state.experience) {
+  if (!state.name || !state.email || !state.experience || !state.location) {
     errorMessage.value = 'Please fill in all required fields'
     return
   }
@@ -135,6 +174,7 @@ async function onSubmit() {
         email: state.email,
         phone: state.phone,
         experience: state.experience,
+        location: state.location,
         selected_slots: state.selectedSlots,
         no_availability: state.noAvailability ? 1 : 0,
         message: state.message
@@ -194,6 +234,16 @@ async function onSubmit() {
           placeholder="e.g. 3.5"
         />
       </UFormField>
+
+      <UFormField label="Preferred Location" required>
+        <USelect
+          v-model="state.location"
+          :items="locationOptions"
+          placeholder="Select a location"
+          value-key="value"
+          class="w-full"
+        />
+      </UFormField>
     </div>
 
     <!-- Time Slot Selection -->
@@ -207,31 +257,67 @@ async function onSubmit() {
         <p class="text-sm text-gray-500 mt-2">Loading available times...</p>
       </div>
 
-      <div v-else-if="!slotsByWeek.length" class="bg-gray-50 rounded-lg p-4 text-center">
+      <div v-else-if="!slotsByDay.length" class="bg-gray-50 rounded-lg p-4 text-center">
         <p class="text-gray-600">No available time slots at the moment.</p>
         <p class="text-sm text-gray-500 mt-1">Please check back later or leave a message below.</p>
       </div>
 
-      <div v-else class="space-y-4">
-        <!-- Slots grouped by week -->
-        <div v-for="week in slotsByWeek" :key="week.weekLabel" class="border rounded-lg p-4">
-          <h4 class="font-medium text-gray-700 mb-3">{{ week.weekLabel }}</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label
-              v-for="slot in week.slots"
-              :key="slot.id"
-              class="flex items-center gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
-              :class="{ 'opacity-50 cursor-not-allowed': state.noAvailability }"
-            >
-              <input
-                type="checkbox"
-                class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                :checked="state.selectedSlots.includes(slot.id)"
-                :disabled="state.noAvailability"
-                @change="toggleSlot(slot.id)"
+      <div v-else class="space-y-2">
+        <!-- Day Accordion -->
+        <div
+          v-for="day in slotsByDay"
+          :key="day.date"
+          class="border rounded-lg overflow-hidden"
+          :class="{ 'opacity-50': state.noAvailability }"
+        >
+          <!-- Day Header (Accordion Toggle) -->
+          <button
+            type="button"
+            class="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+            :disabled="state.noAvailability"
+            @click="toggleDay(day.date)"
+          >
+            <div class="flex items-center gap-2">
+              <Icon
+                :name="expandedDays.has(day.date) ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
+                class="w-5 h-5 text-gray-500"
+              />
+              <span class="font-medium">{{ day.dayLabel }}</span>
+              <span class="text-sm text-gray-500">{{ day.dateLabel }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500">{{ day.slots.length }} slot(s)</span>
+              <span
+                v-if="selectedCountForDay(day) > 0"
+                class="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
               >
-              <span class="text-sm">{{ formatSlot(slot) }}</span>
-            </label>
+                {{ selectedCountForDay(day) }} selected
+              </span>
+            </div>
+          </button>
+
+          <!-- Time Chips (Expanded Content) -->
+          <div
+            v-if="expandedDays.has(day.date)"
+            class="px-4 py-3 bg-white border-t"
+          >
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="slot in day.slots"
+                :key="slot.id"
+                type="button"
+                class="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
+                :class="[
+                  isSelected(slot.id)
+                    ? 'bg-primary-500 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ]"
+                :disabled="state.noAvailability"
+                @click="toggleSlot(slot.id)"
+              >
+                {{ formatTimeRange(slot.start_time, slot.end_time) }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -252,7 +338,7 @@ async function onSubmit() {
         </div>
 
         <!-- Selected count -->
-        <p v-if="state.selectedSlots.length > 0" class="text-sm text-primary-600">
+        <p v-if="state.selectedSlots.length > 0" class="text-sm text-primary-600 font-medium">
           {{ state.selectedSlots.length }} time slot(s) selected
         </p>
       </div>

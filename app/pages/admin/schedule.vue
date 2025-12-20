@@ -10,7 +10,7 @@ const weekOffset = ref(0)
 const { data: settings } = await useFetch('/api/settings')
 const slotDuration = computed(() => {
   const setting = settings.value?.find((s: any) => s.key === 'slot_duration')
-  return parseInt(setting?.value || '60')
+  return parseInt(setting?.value || '30')
 })
 
 // Calculate the start of the displayed week (Monday)

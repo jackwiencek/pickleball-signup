@@ -49,10 +49,24 @@ export default defineEventHandler(async (event) => {
         }
 
         // Update the slot status
-        await db.execute({
-            sql: 'UPDATE time_slots SET status = ? WHERE id = ?',
-            args: [body.status, id]
-        })
+        if (body.status === 'available') {
+            // Clear booked_by when cancelling back to available
+            await db.execute({
+                sql: 'UPDATE time_slots SET status = ?, booked_by = NULL WHERE id = ?',
+                args: [body.status, id]
+            })
+        } else if (body.booked_by !== undefined) {
+            // Restore with booked_by (for undo)
+            await db.execute({
+                sql: 'UPDATE time_slots SET status = ?, booked_by = ? WHERE id = ?',
+                args: [body.status, body.booked_by, id]
+            })
+        } else {
+            await db.execute({
+                sql: 'UPDATE time_slots SET status = ? WHERE id = ?',
+                args: [body.status, id]
+            })
+        }
 
         return { success: true }
     } catch (error: any) {

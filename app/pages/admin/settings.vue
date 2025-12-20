@@ -23,8 +23,8 @@ const saving = ref(false)
 const saved = ref(false)
 
 const durationOptions = [
-  { label: '30 minutes', value: '30' },
-  { label: '60 minutes', value: '60' }
+  { label: '30 minutes', value: '30' }
+  // { label: '60 minutes', value: '60' }
 ]
 
 async function saveDuration() {
