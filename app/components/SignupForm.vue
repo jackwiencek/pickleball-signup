@@ -16,7 +16,7 @@ const state = reactive({
 const locationOptions = [
   { label: 'Hot Shots Pickleball Club', value: 'hot-shots' },
   { label: "Lida's Pickleball Ranch", value: 'lidas-ranch' },
-  { label: 'Orville Vitality', value: 'orville-vitality' }
+  { label: ' Vitality Fitness', value: 'orville-vitality' }
 ]
 
 // Fetch available slots for the next 4 weeks
@@ -197,120 +197,136 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div v-if="submitted" class="text-center py-8">
-    <Icon name="i-heroicons-check-circle" class="w-16 h-16 text-green-500 mx-auto mb-4" />
-    <p class="text-green-600 font-bold text-xl">Thanks for signing up!</p>
-    <p class="text-gray-600 mt-2">The coach will review your request and get back to you soon.</p>
+  <!-- Success State -->
+  <div v-if="submitted" class="text-center py-12">
+    <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+      <Icon name="i-heroicons-check" class="w-8 h-8 text-white" />
+    </div>
+    <h2 class="text-2xl font-bold text-black mb-2">You're all set!</h2>
+    <p class="text-neutral-500">Coach Joe will review your request and get back to you soon.</p>
   </div>
 
-  <form v-else @submit.prevent="onSubmit" class="space-y-6">
+  <form v-else @submit.prevent="onSubmit" class="space-y-8">
     <!-- Error message -->
-    <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-      {{ errorMessage }}
+    <div v-if="errorMessage" class="bg-neutral-100 border border-neutral-300 text-neutral-800 px-4 py-3 rounded-xl flex items-center gap-3">
+      <Icon name="i-heroicons-exclamation-circle" class="w-5 h-5 flex-shrink-0" />
+      <span class="text-sm">{{ errorMessage }}</span>
     </div>
 
-    <!-- Personal Info -->
-    <div class="space-y-4">
-      <UFormField label="Name" required>
-        <UInput v-model="state.name" placeholder="Your full name" />
-      </UFormField>
+    <!-- Personal Info Section -->
+    <div>
+      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Your Information</h3>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Name" required>
+            <UInput v-model="state.name" placeholder="Your full name" size="lg" />
+          </UFormField>
 
-      <UFormField label="Email" required>
-        <UInput v-model="state.email" type="email" placeholder="you@example.com" />
-      </UFormField>
+          <UFormField label="Phone">
+            <UInput v-model="state.phone" type="tel" placeholder="(555) 555-5555" size="lg" />
+          </UFormField>
+        </div>
+        
 
-      <UFormField label="Phone">
-        <UInput v-model="state.phone" type="tel" placeholder="(555) 555-5555" />
-      </UFormField>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Email" required>
+            <UInput v-model="state.email" type="email" placeholder="you@example.com" size="lg" />
+          </UFormField>
 
-      <UFormField label="Experience Level (1.0 - 8.0)" required>
-        <UInput
-          class="w-32"
-          v-model="state.experience"
-          type="number"
-          step="0.1"
-          min="1.0"
-          max="8.0"
-          placeholder="e.g. 3.5"
-        />
-      </UFormField>
+          <UFormField label="Location" required>
+            <USelect
+              v-model="state.location"
+              :items="locationOptions"
+              placeholder="Select location"
+              value-key="value"
+              size="lg"
+              class="w-64"
+            />
+          </UFormField>
+        </div>
 
-      <UFormField label="Preferred Location" required>
-        <USelect
-          v-model="state.location"
-          :items="locationOptions"
-          placeholder="Select a location"
-          value-key="value"
-          class="w-full"
-        />
-      </UFormField>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <UFormField label="Skill Level (1.0 - 8.0)" required>
+            <UInput
+              v-model="state.experience"
+              type="number"
+              step="0.1"
+              min="1.0"
+              max="8.0"
+              placeholder="e.g. 3.5"
+              size="lg"
+            />
+          </UFormField>
+
+          
+        </div>
+      </div>
     </div>
 
     <!-- Time Slot Selection -->
     <div>
-      <label class="block text-sm font-medium mb-2">
-        Select Available Times <span class="text-red-500">*</span>
-      </label>
+      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Select Times</h3>
 
-      <div v-if="loadingSlots" class="text-center py-4">
-        <Icon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin mx-auto" />
-        <p class="text-sm text-gray-500 mt-2">Loading available times...</p>
+      <div v-if="loadingSlots" class="py-8 text-center">
+        <Icon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin mx-auto text-neutral-400" />
+        <p class="text-sm text-neutral-500 mt-3">Loading available times...</p>
       </div>
 
-      <div v-else-if="!slotsByDay.length" class="bg-gray-50 rounded-lg p-4 text-center">
-        <p class="text-gray-600">No available time slots at the moment.</p>
-        <p class="text-sm text-gray-500 mt-1">Please check back later or leave a message below.</p>
+      <div v-else-if="!slotsByDay.length" class="bg-neutral-50 rounded-xl p-6 text-center">
+        <Icon name="i-heroicons-calendar" class="w-8 h-8 text-neutral-300 mx-auto mb-3" />
+        <p class="text-neutral-600 font-medium">No available slots</p>
+        <p class="text-sm text-neutral-400 mt-1">Check back later or leave a message below.</p>
       </div>
 
-      <div v-else class="space-y-2">
+      <div v-else class="space-y-3">
         <!-- Day Accordion -->
         <div
           v-for="day in slotsByDay"
           :key="day.date"
-          class="border rounded-lg overflow-hidden"
-          :class="{ 'opacity-50': state.noAvailability }"
+          class="border border-neutral-200 rounded-xl overflow-hidden transition-all"
+          :class="{ 'opacity-40': state.noAvailability }"
         >
-          <!-- Day Header (Accordion Toggle) -->
+          <!-- Day Header -->
           <button
             type="button"
-            class="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+            class="w-full px-4 py-4 flex items-center justify-between bg-neutral-50 hover:bg-neutral-100 transition-colors"
             :disabled="state.noAvailability"
             @click="toggleDay(day.date)"
           >
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
               <Icon
                 :name="expandedDays.has(day.date) ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
-                class="w-5 h-5 text-gray-500"
+                class="w-4 h-4 text-neutral-400"
               />
-              <span class="font-medium">{{ day.dayLabel }}</span>
-              <span class="text-sm text-gray-500">{{ day.dateLabel }}</span>
+              <span class="font-semibold text-black">{{ day.dayLabel }}</span>
+              <span class="text-neutral-400">{{ day.dateLabel }}</span>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-500">{{ day.slots.length }} slot(s)</span>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-neutral-400">{{ day.slots.length }} available</span>
               <span
                 v-if="selectedCountForDay(day) > 0"
-                class="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full"
+                class="text-xs bg-black text-white px-2.5 py-1 rounded-full font-medium"
               >
-                {{ selectedCountForDay(day) }} selected
+                {{ selectedCountForDay(day) }}
               </span>
             </div>
           </button>
 
-          <!-- Time Chips (Expanded Content) -->
+          <!-- Time Chips -->
           <div
             v-if="expandedDays.has(day.date)"
-            class="px-4 py-3 bg-white border-t"
+            class="px-4 py-4 bg-white border-t border-neutral-100"
           >
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="slot in day.slots"
                 :key="slot.id"
                 type="button"
-                class="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
+                class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200"
                 :class="[
                   isSelected(slot.id)
-                    ? 'bg-primary-500 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-black text-white shadow-md'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                 ]"
                 :disabled="state.noAvailability"
                 @click="toggleSlot(slot.id)"
@@ -322,36 +338,56 @@ async function onSubmit() {
         </div>
 
         <!-- No availability option -->
-        <div class="border-t pt-4 mt-4">
-          <label class="flex items-center gap-2 cursor-pointer">
+        <div class="pt-4 mt-2">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <div
+              class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+              :class="state.noAvailability ? 'bg-black border-black' : 'border-neutral-300 group-hover:border-neutral-400'"
+            >
+              <Icon v-if="state.noAvailability" name="i-heroicons-check" class="w-3 h-3 text-white" />
+            </div>
             <input
               type="checkbox"
-              class="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+              class="sr-only"
               :checked="state.noAvailability"
               @change="toggleNoAvailability"
             >
-            <span class="text-sm">
-              <strong>None of these times work for me</strong>
-              <span class="text-gray-500"> - Coach will contact you directly</span>
+            <span class="text-sm text-neutral-600">
+              <span class="font-medium text-black">None of these times work</span>
+              <span class="hidden sm:inline"> - Coach will contact you directly</span>
             </span>
           </label>
         </div>
 
         <!-- Selected count -->
-        <p v-if="state.selectedSlots.length > 0" class="text-sm text-primary-600 font-medium">
-          {{ state.selectedSlots.length }} time slot(s) selected
+        <p v-if="state.selectedSlots.length > 0" class="text-sm text-black font-medium pt-2">
+          {{ state.selectedSlots.length }} time slot{{ state.selectedSlots.length > 1 ? 's' : '' }} selected
         </p>
       </div>
     </div>
 
     <!-- Message -->
-    <UFormField label="Message (optional)">
-      <UTextarea v-model="state.message" placeholder="Any questions or additional availability info" />
-    </UFormField>
+    <div>
+      <h3 class="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-4">Additional Info</h3>
+      <UFormField label="Message (optional)">
+        <UTextarea
+          v-model="state.message"
+          placeholder="Any questions or notes for the coach..."
+          :rows="3"
+          size="lg"
+        />
+      </UFormField>
+    </div>
 
     <!-- Submit -->
-    <UButton type="submit" :loading="loading" block>
-      Sign Up for Lessons
+    <UButton
+      type="submit"
+      :loading="loading"
+      block
+      size="xl"
+      class="!bg-black hover:!bg-neutral-800 !text-white font-semibold"
+    >
+      Book Lesson
     </UButton>
   </form>
 </template>

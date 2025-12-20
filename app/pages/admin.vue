@@ -19,33 +19,52 @@ async function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between items-center py-4">
-          <h1 class="text-xl font-bold">Coach Dashboard</h1>
-          <UButton variant="outline" @click="logout">Logout</UButton>
+  <div class="min-h-screen bg-neutral-50">
+    <!-- Header -->
+    <header class="bg-white border-b border-neutral-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+              <span class="text-white font-bold text-sm">P</span>
+            </div>
+            <h1 class="text-lg font-semibold tracking-tight">Dashboard</h1>
+          </div>
+          <UButton
+            variant="ghost"
+            color="neutral"
+            @click="logout"
+            class="text-neutral-500 hover:text-black"
+          >
+            <Icon name="i-heroicons-arrow-right-on-rectangle" class="w-4 h-4 mr-2" />
+            Logout
+          </UButton>
         </div>
+      </div>
+    </header>
 
-        <!-- Tab Navigation -->
-        <nav class="flex gap-1 -mb-px">
+    <!-- Tab Navigation -->
+    <div class="bg-white border-b border-neutral-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <nav class="flex gap-8">
           <NuxtLink
             v-for="tab in tabs"
             :key="tab.to"
             :to="tab.to"
-            class="px-4 py-2 border-b-2 transition-colors flex items-center gap-2"
+            class="py-4 border-b-2 -mb-px transition-all flex items-center gap-2 text-sm font-medium"
             :class="route.path.startsWith(tab.to)
-              ? 'border-primary-500 text-primary-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+              ? 'border-black text-black'
+              : 'border-transparent text-neutral-500 hover:text-black hover:border-neutral-300'"
           >
             <Icon :name="tab.icon" class="w-4 h-4" />
             {{ tab.label }}
           </NuxtLink>
         </nav>
       </div>
-    </header>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <NuxtPage />
     </main>
   </div>

@@ -1,14 +1,30 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-12 px-4">
-    <div class="max-w-md mx-auto">
-      <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Pickleball Lessons</h1>
-        <p class="mt-2 text-gray-600">Sign up for lessons with Coach Joe</p>
+  <div class="min-h-screen bg-white">
+    
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <!-- Hero Section -->
+      <div class="mb-10 sm:mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-black tracking-tight">
+          Book Your Lesson
+        </h1>
+        <p class="mt-3 text-neutral-500 text-lg">
+          Private coaching with Coach Joe. Select your preferred times below.
+        </p>
       </div>
-      
-      <UCard>
+
+      <!-- Form Card -->
+      <div class="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm">
         <SignupForm />
-      </UCard>
-    </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-12 pt-8 border-t border-neutral-100">
+        <p class="text-center text-sm text-neutral-400">
+          Questions? Contact Coach Joe directly.
+        </p>
+      </footer>
+    </main>
   </div>
 </template>

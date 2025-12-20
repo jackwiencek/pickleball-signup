@@ -191,77 +191,84 @@ defineExpose({ refresh })
 
 <template>
   <div>
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-lg font-semibold">All Signups</h2>
-      <UButton variant="ghost" @click="refresh">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-xl font-semibold text-black">Signups</h2>
+        <p class="text-sm text-neutral-500 mt-1">Manage lesson requests</p>
+      </div>
+      <UButton variant="ghost" color="neutral" @click="refresh" class="text-neutral-500">
         <Icon name="i-heroicons-arrow-path" class="w-4 h-4" />
-        Refresh
       </UButton>
     </div>
 
     <!-- Undo notification -->
     <div
       v-if="lastCancelled"
-      class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between"
+      class="mb-4 p-4 bg-neutral-100 border border-neutral-200 rounded-xl flex items-center justify-between"
     >
-      <div class="flex items-center gap-2">
-        <Icon name="i-heroicons-arrow-uturn-left" class="w-5 h-5 text-amber-600" />
-        <span class="text-sm text-amber-800">Slot cancelled</span>
+      <div class="flex items-center gap-3">
+        <Icon name="i-heroicons-arrow-uturn-left" class="w-5 h-5 text-neutral-600" />
+        <span class="text-sm text-neutral-700">Slot cancelled</span>
       </div>
       <UButton
         size="xs"
-        color="amber"
         variant="soft"
+        color="neutral"
         :loading="undoing"
         @click="undoCancel"
+        class="!bg-black !text-white hover:!bg-neutral-800"
       >
         Undo
       </UButton>
     </div>
 
-    <UCard>
-      <div v-if="pending" class="text-center py-8">
-        <Icon name="i-heroicons-arrow-path" class="w-8 h-8 animate-spin mx-auto" />
-        <p class="mt-2 text-gray-600">Loading signups...</p>
+    <!-- Content Card -->
+    <div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+      <div v-if="pending" class="text-center py-16">
+        <Icon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin mx-auto text-neutral-400" />
+        <p class="mt-3 text-neutral-500">Loading signups...</p>
       </div>
 
-      <div v-else-if="!signups?.length" class="text-center py-8">
-        <Icon name="i-heroicons-inbox" class="w-12 h-12 text-gray-400 mx-auto" />
-        <p class="mt-2 text-gray-600">No signups yet</p>
+      <div v-else-if="!signups?.length" class="text-center py-16">
+        <Icon name="i-heroicons-inbox" class="w-10 h-10 text-neutral-300 mx-auto" />
+        <p class="mt-3 text-neutral-500">No signups yet</p>
       </div>
 
-      <div v-else class="divide-y">
+      <div v-else class="divide-y divide-neutral-100">
         <div
           v-for="signup in signups"
           :key="signup.id"
-          class="py-4"
+          class="p-5 hover:bg-neutral-50 transition-colors"
         >
           <!-- Main row -->
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <h3 class="font-medium">{{ signup.name }}</h3>
-                <span v-if="signup.experience" class="text-xs bg-gray-100 px-2 py-0.5 rounded">
-                  {{ signup.experience }} rating
+              <div class="flex flex-wrap items-center gap-2 mb-1">
+                <h3 class="font-semibold text-black">{{ signup.name }}</h3>
+                <span v-if="signup.experience" class="text-xs bg-neutral-100 text-neutral-600 px-2 py-0.5 rounded-full">
+                  {{ signup.experience }}
                 </span>
                 <span
                   v-if="signup.no_availability === 1"
-                  class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded"
+                  class="text-xs bg-neutral-200 text-neutral-700 px-2 py-0.5 rounded-full"
                 >
-                  No availability
+                  Contact needed
                 </span>
               </div>
-              <p class="text-sm text-gray-600">{{ signup.email }}</p>
-              <p v-if="signup.phone" class="text-sm text-gray-500">{{ signup.phone }}</p>
-              <p v-if="signup.location" class="text-sm text-gray-500">
-                <Icon name="i-heroicons-map-pin" class="w-3 h-3 inline" />
-                {{ locationLabels[signup.location] || signup.location }}
-              </p>
-              <p v-if="signup.message" class="text-sm text-gray-500 mt-1 italic">
+              <p class="text-sm text-neutral-600">{{ signup.email }}</p>
+              <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-neutral-500">
+                <span v-if="signup.phone">{{ signup.phone }}</span>
+                <span v-if="signup.location" class="flex items-center gap-1">
+                  <Icon name="i-heroicons-map-pin" class="w-3 h-3" />
+                  {{ locationLabels[signup.location] || signup.location }}
+                </span>
+              </div>
+              <p v-if="signup.message" class="text-sm text-neutral-500 mt-2 italic border-l-2 border-neutral-200 pl-3">
                 "{{ signup.message }}"
               </p>
-              <p class="text-xs text-gray-400 mt-1">
-                Submitted {{ formatDate(signup.created_at) }}
+              <p class="text-xs text-neutral-400 mt-2">
+                {{ formatDate(signup.created_at) }}
               </p>
             </div>
 
@@ -269,10 +276,10 @@ defineExpose({ refresh })
             <div class="flex items-center gap-2">
               <template v-if="signup.no_availability !== 1 && signup.selected_slots">
                 <button
-                  class="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  class="text-sm text-black hover:text-neutral-600 flex items-center gap-1 font-medium"
                   @click="toggleRow(signup.id)"
                 >
-                  {{ getSignupSlots(signup).length }} slot(s)
+                  {{ getSignupSlots(signup).length }} slot{{ getSignupSlots(signup).length !== 1 ? 's' : '' }}
                   <Icon
                     :name="expandedRows.has(signup.id) ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
                     class="w-4 h-4"
@@ -285,56 +292,67 @@ defineExpose({ refresh })
           <!-- Expanded slot details -->
           <div
             v-if="expandedRows.has(signup.id) && signup.selected_slots"
-            class="mt-4 ml-4 space-y-2"
+            class="mt-4 space-y-2"
           >
             <div
               v-for="slot in getSignupSlots(signup)"
               :key="slot.id"
-              class="flex items-center justify-between p-2 rounded-lg"
+              class="flex items-center justify-between p-3 rounded-xl border"
               :class="{
-                'bg-yellow-50': slot.status === 'pending',
-                'bg-green-50': slot.status === 'confirmed'
+                'bg-neutral-50 border-neutral-200': slot.status === 'pending',
+                'bg-black/5 border-black/10': slot.status === 'confirmed'
               }"
             >
-              <div class="flex items-center gap-2">
-                <Icon
-                  v-if="slot.status === 'confirmed'"
-                  name="i-heroicons-check-circle"
-                  class="w-5 h-5 text-green-600"
-                />
-                <Icon
-                  v-else
-                  name="i-heroicons-clock"
-                  class="w-5 h-5 text-yellow-600"
-                />
-                <span class="text-sm">{{ formatSlot(slot) }}</span>
-                <span
-                  class="text-xs px-2 py-0.5 rounded"
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center"
                   :class="{
-                    'bg-yellow-200 text-yellow-800': slot.status === 'pending',
-                    'bg-green-200 text-green-800': slot.status === 'confirmed'
+                    'bg-neutral-200': slot.status === 'pending',
+                    'bg-black': slot.status === 'confirmed'
                   }"
                 >
-                  {{ slot.status }}
-                </span>
+                  <Icon
+                    v-if="slot.status === 'confirmed'"
+                    name="i-heroicons-check"
+                    class="w-4 h-4 text-white"
+                  />
+                  <Icon
+                    v-else
+                    name="i-heroicons-clock"
+                    class="w-4 h-4 text-neutral-600"
+                  />
+                </div>
+                <div>
+                  <span class="text-sm font-medium text-black">{{ formatSlot(slot) }}</span>
+                  <span
+                    class="ml-2 text-xs px-2 py-0.5 rounded-full"
+                    :class="{
+                      'bg-neutral-200 text-neutral-700': slot.status === 'pending',
+                      'bg-black text-white': slot.status === 'confirmed'
+                    }"
+                  >
+                    {{ slot.status }}
+                  </span>
+                </div>
               </div>
 
               <div class="flex items-center gap-2">
                 <UButton
                   v-if="slot.status === 'pending'"
                   size="xs"
-                  color="primary"
                   :loading="confirming === slot.id"
                   @click="confirmSlot(slot.id)"
+                  class="!bg-black !text-white hover:!bg-neutral-800"
                 >
                   Confirm
                 </UButton>
                 <UButton
                   size="xs"
-                  color="red"
-                  variant="soft"
+                  variant="ghost"
+                  color="neutral"
                   :loading="cancelling === slot.id"
                   @click="cancelSlot(slot.id, signup.id)"
+                  class="text-neutral-500 hover:text-black"
                 >
                   Cancel
                 </UButton>
@@ -343,6 +361,6 @@ defineExpose({ refresh })
           </div>
         </div>
       </div>
-    </UCard>
+    </div>
   </div>
 </template>

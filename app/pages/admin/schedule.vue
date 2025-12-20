@@ -160,7 +160,7 @@ async function toggleSlot(date: string, startTime: string, endTime: string) {
 // Get cell styling based on slot status (using overlap detection)
 function getCellClass(date: string, startTime: string, endTime: string) {
   const slot = getOverlappingSlot(date, startTime, endTime)
-  if (!slot) return 'bg-gray-100 hover:bg-green-100 cursor-pointer'
+  if (!slot) return 'bg-neutral-100 hover:bg-neutral-200 cursor-pointer'
 
   switch (slot.status) {
     case 'available':
@@ -170,7 +170,7 @@ function getCellClass(date: string, startTime: string, endTime: string) {
     case 'confirmed':
       return 'bg-blue-200 cursor-not-allowed'
     default:
-      return 'bg-gray-100'
+      return 'bg-neutral-100'
   }
 }
 
@@ -231,79 +231,81 @@ function goToToday() {
     <!-- Header with navigation -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
-        <h2 class="text-lg font-semibold">Weekly Schedule</h2>
-        <p class="text-sm text-gray-500">Click cells to toggle availability</p>
+        <h2 class="text-xl font-semibold text-black">Schedule</h2>
+        <p class="text-sm text-neutral-500 mt-1">Click cells to toggle availability</p>
       </div>
 
-      <div class="flex items-center gap-2">
-        <UButton variant="ghost" size="sm" @click="prevWeek">
-          <Icon name="i-heroicons-chevron-left" />
+      <div class="flex items-center gap-1 bg-neutral-100 rounded-xl p-1">
+        <UButton variant="ghost" size="sm" color="neutral" @click="prevWeek" class="rounded-lg">
+          <Icon name="i-heroicons-chevron-left" class="w-4 h-4" />
         </UButton>
-        <UButton variant="ghost" size="sm" @click="goToToday">Today</UButton>
-        <span class="font-medium min-w-[180px] text-center">{{ weekRangeDisplay }}</span>
-        <UButton variant="ghost" size="sm" @click="nextWeek">
-          <Icon name="i-heroicons-chevron-right" />
+        <UButton variant="ghost" size="sm" color="neutral" @click="goToToday" class="rounded-lg text-neutral-600">
+          Today
+        </UButton>
+        <span class="font-medium min-w-[160px] text-center text-sm text-black px-2">{{ weekRangeDisplay }}</span>
+        <UButton variant="ghost" size="sm" color="neutral" @click="nextWeek" class="rounded-lg">
+          <Icon name="i-heroicons-chevron-right" class="w-4 h-4" />
         </UButton>
       </div>
     </div>
 
     <!-- Legend -->
-    <div class="flex gap-4 mb-4 text-sm">
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-gray-100 rounded"></div>
-        <span>Unavailable</span>
+    <div class="flex flex-wrap gap-4 mb-6 text-sm">
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-neutral-100 rounded border border-neutral-200"></div>
+        <span class="text-neutral-600">Unavailable</span>
       </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-green-200 rounded"></div>
-        <span>Available</span>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-green-300 rounded"></div>
+        <span class="text-neutral-600">Available</span>
       </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-yellow-200 rounded"></div>
-        <span>Pending</span>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+        <span class="text-neutral-600">Pending</span>
       </div>
-      <div class="flex items-center gap-1">
-        <div class="w-4 h-4 bg-blue-200 rounded"></div>
-        <span>Confirmed</span>
+      <div class="flex items-center gap-2">
+        <div class="w-4 h-4 bg-blue-500 rounded"></div>
+        <span class="text-neutral-600">Confirmed</span>
       </div>
     </div>
 
     <!-- Schedule Grid -->
-    <UCard>
+    <div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
           <thead>
-            <tr>
-              <th class="p-2 border-b text-left w-20">Time</th>
+            <tr class="bg-neutral-50">
+              <th class="p-3 border-b border-neutral-200 text-left w-20 text-xs font-semibold text-neutral-500 uppercase tracking-wider">Time</th>
               <th
                 v-for="day in days"
                 :key="day.date"
-                class="p-2 border-b text-center min-w-[100px]"
+                class="p-3 border-b border-neutral-200 text-center min-w-[100px]"
               >
-                <div class="font-medium">{{ day.name }}</div>
-                <div class="text-xs text-gray-500">{{ day.display }}</div>
+                <div class="font-semibold text-black text-sm">{{ day.name }}</div>
+                <div class="text-xs text-neutral-400">{{ day.display }}</div>
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="slot in timeSlots" :key="slot.time">
-              <td class="p-2 border-b text-sm font-medium">{{ slot.display }}</td>
+            <tr v-for="slot in timeSlots" :key="slot.time" class="hover:bg-neutral-50/50">
+              <td class="p-2 border-b border-neutral-100 text-xs font-medium text-neutral-500">{{ slot.display }}</td>
               <td
                 v-for="day in days"
                 :key="`${day.date}-${slot.time}`"
-                class="p-1 border-b"
+                class="p-1 border-b border-neutral-100"
               >
                 <div
                   :class="[
-                    'h-10 rounded transition-colors flex items-center justify-center text-xs',
+                    'h-10 rounded-lg transition-all duration-200 flex items-center justify-center text-xs font-medium',
                     getCellClass(day.date, slot.time, slot.endTime)
                   ]"
                   @click="toggleSlot(day.date, slot.time, slot.endTime)"
                 >
                   <template v-if="getOverlappingSlot(day.date, slot.time, slot.endTime)?.status === 'pending'">
-                    Pending
+                    <span class="text-neutral-700">Pending</span>
                   </template>
                   <template v-else-if="getOverlappingSlot(day.date, slot.time, slot.endTime)?.status === 'confirmed'">
-                    Booked
+                    <span class="text-white">Booked</span>
                   </template>
                 </div>
               </td>
@@ -311,30 +313,35 @@ function goToToday() {
           </tbody>
         </table>
       </div>
-    </UCard>
+    </div>
 
     <!-- Apply to future weeks -->
-    <UCard class="mt-6">
+    <div class="mt-6 bg-white border border-neutral-200 rounded-2xl p-6">
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div class="flex-1">
-          <h3 class="font-medium">Apply to Future Weeks</h3>
-          <p class="text-sm text-gray-500">Copy this week's available slots to upcoming weeks</p>
+          <h3 class="font-semibold text-black">Apply to Future Weeks</h3>
+          <p class="text-sm text-neutral-500 mt-1">Copy this week's available slots to upcoming weeks</p>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm">Next</span>
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-neutral-600">Next</span>
           <UInput
             v-model="applyWeeksCount"
             type="number"
             min="1"
             max="12"
             class="w-16"
+            size="sm"
           />
-          <span class="text-sm">weeks</span>
-          <UButton :loading="applying" @click="applyToWeeks">
+          <span class="text-sm text-neutral-600">weeks</span>
+          <UButton
+            :loading="applying"
+            @click="applyToWeeks"
+            class="!bg-black !text-white hover:!bg-neutral-800"
+          >
             Apply
           </UButton>
         </div>
       </div>
-    </UCard>
+    </div>
   </div>
 </template>

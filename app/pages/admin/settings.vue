@@ -52,48 +52,55 @@ watch(slotDuration, (newVal) => {
 </script>
 
 <template>
-  <div class="max-w-xl">
-    <h2 class="text-lg font-semibold mb-6">Settings</h2>
+  <div class="max-w-2xl">
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold text-black">Settings</h2>
+      <p class="text-sm text-neutral-500 mt-1">Configure your scheduling preferences</p>
+    </div>
 
-    <UCard>
-      <div class="space-y-6">
-        <!-- Slot Duration -->
-        <div>
-          <h3 class="font-medium mb-2">Default Slot Duration</h3>
-          <p class="text-sm text-gray-500 mb-3">
-            How long each time slot should be on the schedule grid.
-          </p>
-
-          <div class="flex items-center gap-4">
+    <div class="bg-white border border-neutral-200 rounded-2xl divide-y divide-neutral-100">
+      <!-- Slot Duration -->
+      <div class="p-6">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <h3 class="font-semibold text-black">Slot Duration</h3>
+            <p class="text-sm text-neutral-500 mt-1">
+              How long each time slot should be on the schedule grid.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
             <USelect
               v-model="selectedDuration"
               :items="durationOptions"
               value-key="value"
-              class="w-48"
+              class="w-40"
+              size="sm"
             />
-
-            <UButton :loading="saving" @click="saveDuration">
+            <UButton
+              :loading="saving"
+              size="sm"
+              class="!bg-black !text-white hover:!bg-neutral-800"
+              @click="saveDuration"
+            >
               Save
             </UButton>
-
-            <span v-if="saved" class="text-green-600 text-sm">
+            <span v-if="saved" class="text-black text-sm flex items-center gap-1">
               <Icon name="i-heroicons-check" class="w-4 h-4" />
-              Saved!
             </span>
           </div>
-
-          <p class="text-xs text-amber-600 mt-2">
-            Note: Changing this will affect how the schedule grid displays. Existing slots will not be modified.
-          </p>
         </div>
+        <p class="text-xs text-neutral-400 mt-3">
+          Note: Changing this affects the schedule grid display. Existing slots are not modified.
+        </p>
+      </div>
 
-        <hr />
-
-        <!-- Future settings can go here -->
-        <div class="text-sm text-gray-500">
-          More settings coming soon (booking limits, email notifications, etc.)
+      <!-- Future settings placeholder -->
+      <div class="p-6">
+        <div class="text-center py-8">
+          <Icon name="i-heroicons-cog-6-tooth" class="w-8 h-8 text-neutral-300 mx-auto" />
+          <p class="text-sm text-neutral-400 mt-3">More settings coming soon</p>
         </div>
       </div>
-    </UCard>
+    </div>
   </div>
 </template>
